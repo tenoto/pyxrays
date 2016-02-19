@@ -1,0 +1,21 @@
+template_pulse_profile: 'input/pulse_PSRB1509_PCA_2_20keV_Kuiper15.txt'
+# phase, profile (arbitrary)
+flag_template_error: False
+# if error is included, the flag is True
+source_rate:     0.166
+background_rate: 0.473 
+# source rate is counts/sec
+pulsed_fraction: 0.85 
+# source rate includes DC-offset
+chisquare_threshold: 1.1 
+time_noise_gauss_sigma: 0.010
+# time_noise_gauss_sigma is a Gaussian timing noise (ms)
+period: 150
+# period (ms)
+number_of_bins: 100 
+# number of phase bin
+outdir_path: 'output/'
+outname: 'b1509_pin_n100'
+orbit_period_min: 90.0
+gti_fraction: 0.65
+# --- end of file ---
