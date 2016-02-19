@@ -6,7 +6,7 @@ from pyxrays import __author__, __version__, __license__
 setp(
 	name		 = 'pyxrays',
 	version 	 = __version__,
-	description  = 'python scripts for general X-ray analyses'
+	description  = 'python scripts for general X-ray analyses',
 	license 	 = __license__,
 	author  	 = __author__,
 	author_email = 'teruaki.enoto@gmail.com',
