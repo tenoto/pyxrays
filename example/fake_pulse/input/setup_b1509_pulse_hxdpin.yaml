@@ -14,7 +14,7 @@ period: 150
 # period (ms)
 number_of_bins: 100 
 # number of phase bin
-outdir_path: 'output/'
+outdir_path: 'output'
 outname: 'b1509_pin_n100'
 orbit_period_min: 90.0
 gti_fraction: 0.65

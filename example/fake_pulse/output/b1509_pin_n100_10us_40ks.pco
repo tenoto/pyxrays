@@ -4,13 +4,13 @@ mark 17 on 1
 error off 2
 line on 2
 mark off 2
-la t output//b1509_pin_n100_10us_40ks
+la t output/b1509_pin_n100_10us_40ks
 la f
 time off
 lab x Phase
 lab y Counts
 r x -0.005 1.005
-r y 0 490.800000
+r y 0 489.600000
 line step on
 la f T=40.0 ks jitter=10 \gms pf=85% R=0.1660 B=0.4730 pulsed:5644 cnts OnSrc=62.9 ks
 la 1 P 0.0 189.0 LI 0 1 CO 4 LS 2 

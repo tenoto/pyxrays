@@ -134,13 +134,9 @@ class PulseProfile():
  	  	self.config['number_of_background_photons'] = int(exposure * self.config['background_rate'])
 		self.config['number_of_photons'] = self.config['number_of_pulsed_photons'] + self.config['number_of_DC_photons']
 		
-		self.config['pulse_profile_offset'] = float(self.config['number_of_DC_photons']) / float(self.config['number_of_photons'])
-
-		self.ideal_pulse = self.out_pulse_profle + self.config['pulse_profile_offset']
-
-		func = interp1d(self.out_phase,self.ideal_pulse,kind='linear') # interpolate
+		func = interp1d(self.out_phase,self.out_pulse_profle,kind='linear') # interpolate
 		func_range = [min(self.out_phase),max(self.out_phase)] # holizontal range [x_min, x_max]
-		func_max = max(self.ideal_pulse) # vertical range
+		func_max = max(self.out_pulse_profle) # vertical range		
 
 		tstart_list = []
 		tstop_list  = []
@@ -170,12 +166,14 @@ class PulseProfile():
 		sys.stdout.write("\b" * (TOOLBAR_WIDTH+2)) # return to start of line, after '['
 		TOOLBAR_BASE = int(self.config['number_of_photons'] / TOOLBAR_WIDTH)
 
-		phase_list = []
-		time_list  = []
+		#phase_list = []
+		#time_list  = []
 
-		#for i in range(self.config['number_of_photons']):		
+		time_phase_list = []
+
+		# pulsed signal generation 
 		i = 0
-		while i < self.config['number_of_photons']: 
+		while i < self.config['number_of_pulsed_photons']: 
 			phase  = randomgen(func,func_range,func_max)
 			if self.config['time_noise_gauss_sigma'] > 0.0:
 				phase += numpy.random.normal(0.0,self.config['time_noise_gauss_sigma']/self.config['period'])
@@ -194,14 +192,36 @@ class PulseProfile():
 			if flag == False:
 				continue
 
-			phase_list.append(phase) 
-			time_list.append(event_time)
+			#phase_list.append(phase) 
+			#time_list.append(event_time)
+			time_phase_list.append([event_time,phase])
 		 	i += 1
 
 			if i % TOOLBAR_BASE == 0:
 				sys.stdout.write("-")
 		 		sys.stdout.flush()	
 		sys.stdout.write('\n')
+
+		# DC signal generation 
+		i = 0
+		while i < self.config['number_of_DC_photons']: 
+			phase  = numpy.random.rand()
+			gtinum = numpy.random.randint(len(gti_list))
+			event_time = gti_list[gtinum][0] + phase * self.config['period']*1e-3
+
+			#phase_list.append(phase) 
+			#time_list.append(event_time)
+			time_phase_list.append([event_time,phase])		
+		 	i += 1
+
+			if i % TOOLBAR_BASE == 0:
+				sys.stdout.write("-")
+		 		sys.stdout.flush()	
+		sys.stdout.write('\n')
+
+		time_phase_list.sort()
+		time_list  = [ i[0] for i in time_phase_list]
+		phase_list = [ i[1] for i in time_phase_list]
 
 		if not os.path.exists(self.config['outdir_path']):
 			os.system('mkdir -p %s' % self.config['outdir_path'])
@@ -216,7 +236,7 @@ class PulseProfile():
 		fitsfile = '%s.fits' % basename
 
 		# ==========================
-		# FTS 
+		# FITS 
 		# ==========================
 		hdu0 = pyfits.PrimaryHDU() 
 
@@ -263,22 +283,24 @@ class PulseProfile():
 				self.simulated_pulse[i],
 				self.simulated_pulse_error[i])
 			fout.write(dump)
-		fout.write('no no no\n')
-		for i in range(self.config['number_of_bins']):
-			dump = '%f %f 0.0 \n' % (self.out_phase[i],
-				self.ideal_pulse[i]*self.config['number_of_photons']/sum(self.ideal_pulse))
-			fout.write(dump)		
+#		fout.write('no no no\n')
+#		for i in range(self.config['number_of_bins']):
+#			dump = '%f %f 0.0 \n' % (self.out_phase[i],
+#				self.offseted_pulse_profile[i]*self.config['number_of_photons']/sum(self.offseted_pulse_profile))
+#			fout.write(dump)		
 		fout.close()		
 
 		fout = open(pcofile,'w')
-		title   = '%s' % basename
+		title   = '%s ' % basename
+		title  += '(P=%.3f s)' % (self.config['period']/1e+3)
 		ftitle  = 'T=%.1f ks ' % exposure_ks
-		ftitle += 'jitter=%d \gms ' % (1000.0*float(self.config['time_noise_gauss_sigma']))
+		ftitle += '(On=%.1f ks) ' % (on_source/1e+3)
 		ftitle += 'pf=%d%% ' % (100.0*self.config['pulsed_fraction'])
-		ftitle += 'R=%.4f ' % (self.config['source_rate'])
-		ftitle += 'B=%.4f ' % (self.config['background_rate'])
-		ftitle += 'pulsed:%d cnts ' % (self.config['number_of_pulsed_photons'])
-		ftitle += 'OnSrc=%.1f ks' % (on_source/1e+3)
+		ftitle += 'R=%.2f ' % (self.config['source_rate'])
+		ftitle += 'B=%.2f ' % (self.config['background_rate'])
+		ftitle += 'jit.=%d \gms ' % (1000.0*float(self.config['time_noise_gauss_sigma']))
+		ftitle += 'nbin=%d ' % (self.config['number_of_bins'])
+#		ftitle += 'pulsed:%d cnts ' % (self.config['number_of_pulsed_photons'])
 		dump  = 'skip on\nmark on\nmark 17 on 1\nerror off 2\nline on 2\nmark off 2\n'
 		dump += 'la t %s\n' % title
 		dump += 'la f\ntime off\nlab x Phase\nlab y Counts\n'
@@ -307,6 +329,10 @@ class PulseProfile():
 		cmd += 'mv %s.pdf %s\n' % (os.path.splitext(os.path.basename(psfile))[0],os.path.dirname(psfile))
 		#cmd += 'open %s/%s.pdf \n' % (os.path.dirname(psfile),os.path.splitext(os.path.basename(psfile))[0])
 		print cmd; os.system(cmd)
+
+		f = open('%s.yaml' % (basename),'w')
+		f.write(yaml.dump(self.config))
+		f.close()
 
 	def run(self, number_of_photons):
 		self.show_parameters()
