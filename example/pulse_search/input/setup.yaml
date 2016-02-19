@@ -1,0 +1,16 @@
+input_fitsfile: 'input/crab_050915_hxdnom_pincl_bary.evt'
+extname: 'EVENTS'
+epoch: 180057535.847767
+period: 0.03358087649664188
+pdot: 4.2059137835e-13
+search_period_resoltion: 1e-6
+search_number: 100
+outdir_path: 'output'
+outname: 'crab_050915_search.dat'
+# --- end of file ---
+# --- Convert to Period ---
+# getarrtime.c 
+# p    = 3.358087649664188e-02 (sec)
+# pdot = 4.2059137835e-13 (sec/sec)
+# at MJD = 53628.0000003676736111111
+#Mission Time = 180057535.847767 (s)
