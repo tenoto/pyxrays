@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 from pyxrays import __author__, __version__, __license__
 
-setp(
+setup(
 	name		 = 'pyxrays',
 	version 	 = __version__,
 	description  = 'python scripts for general X-ray analyses',
